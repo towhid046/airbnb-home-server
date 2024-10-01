@@ -1,7 +1,7 @@
 import express, { Application } from "express";
 import { connectDB } from "./config/db";
 import dotenv from "dotenv";
-import userRoutes from './routes/userRoutes'
+import propertiesRoutes from "./routes/propertyRoutes";
 
 dotenv.config();
 
@@ -15,7 +15,7 @@ connectDB();
 app.use(express.json());
 
 // Routes
-app.use("/api", userRoutes);
+app.use(propertiesRoutes);
 
 // Start server
 app.listen(PORT, () => {

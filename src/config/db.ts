@@ -20,5 +20,5 @@ export const getDB = () => {
   if (!client) {
     throw new Error("No database connection");
   }
-  return client.db(process.env.DB_NAME || "mydatabase");
+  return client.db(process.env.DB_NAME || "");
 };
