@@ -15,7 +15,7 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://airbnb-home-client-s4nm.vercel.app"],
+    origin: ["http://localhost:3000", "https://airbnb-home-client-s4nm.vercel.app", "https://airbnb-home-client.vercel.app"],
   })
 );
 app.use(express.json());
