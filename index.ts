@@ -1,8 +1,8 @@
 import express, { Application } from "express";
-import { connectDB } from "./config/db";
+import { connectDB } from "./src/config/db";
 import dotenv from "dotenv";
 import cors from "cors";
-import propertiesRoutes from "./routes/propertyRoutes";
+import propertiesRoutes from "./src/routes/propertyRoutes";
 
 dotenv.config();
 
@@ -15,12 +15,15 @@ connectDB();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://airbnb-home-client-s4nm.vercel.app"],
   })
 );
 app.use(express.json());
 
 // Routes
+app.get('/', (req,res)=>{
+res.send('Airbnb server is running...')  
+})
 app.use(propertiesRoutes);
 
 // Start server
