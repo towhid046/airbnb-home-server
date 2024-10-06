@@ -90,54 +90,6 @@ export const updateProperty = async (
   }
 };
 
-export const filterPropertyCount = async (
-  req: Request,
-  res: Response
-): Promise<any> => {
-  const db = getDB();
-  const propertiesCollection = await getPropertiesCollection(db);
-
-  const minPrice = Number(req.query?.minPrice);
-  const maxPrice = Number(req.query?.maxPrice);
-  const propertyType = req.query?.propertyType; // string
-  const amenities: string[] | any = req.query?.amenities; // array of string
-  const bookingOptions: string[] | any = req.query?.bookingOptions; // array of string
-  const hostLanguages: string[] | any = req.query?.hostLanguages; // array of string
-
-  if (!minPrice || !maxPrice) {
-    return res
-      .status(400)
-      .send({ message: "Both min price and max price are required!" });
-  }
-
-  try {
-    const filter: any = {
-      price: { $gte: minPrice, $lte: maxPrice },
-      propertyType,
-    };
-
-    // Adding filters for amenities, bookingOptions, and hostLanguages if they exist
-    if (amenities && amenities.length > 0) {
-      filter.amenities = { $all: amenities };
-    }
-    if (bookingOptions && bookingOptions.length > 0) {
-      filter.bookingOptions = { $all: bookingOptions };
-    }
-    if (hostLanguages && hostLanguages.length > 0) {
-      filter.hostLanguages = { $all: hostLanguages };
-    }
-
-    // Use countDocuments instead of estimatedDocumentCount for filtering
-    const propertiesCount = await propertiesCollection.countDocuments(filter);
-
-    res.send({ count: propertiesCount });
-  } catch (error) {
-    res
-      .status(500)
-      .send({ error: "An error occurred while filtering properties." });
-  }
-};
-
 export const filterProperty = async (
   req: Request,
   res: Response
@@ -145,13 +97,26 @@ export const filterProperty = async (
   const db = getDB();
   const propertiesCollection = await getPropertiesCollection(db);
 
+  // Parse query parameters
   const minPrice = Number(req.query?.minPrice);
   const maxPrice = Number(req.query?.maxPrice);
-  const propertyType = req.query?.propertyType; // string
-  const amenities: string[] | any = req.query?.amenities; // array of string
-  const bookingOptions: string[] | any = req.query?.bookingOptions; // array of string
-  const hostLanguages: string[] | any = req.query?.hostLanguages; // array of string
+  const { category } = req.query;
+  let amenities = req?.query?.amenities;
+  if (amenities) {
+    amenities = amenities.toString().split(",");
+  }
 
+  let bookingOptions = req?.query?.bookingOptions;
+  if (bookingOptions) {
+    bookingOptions = bookingOptions.toString().split(",");
+  }
+
+  let hostLanguages = req?.query?.hostLanguages;
+  if (hostLanguages) {
+    hostLanguages = hostLanguages.toString().split(",");
+  }
+
+  // Ensure both minPrice and maxPrice are provided
   if (!minPrice || !maxPrice) {
     return res
       .status(400)
@@ -159,26 +124,38 @@ export const filterProperty = async (
   }
 
   try {
+    // Base filter for price
     const filter: any = {
       price: { $gte: minPrice, $lte: maxPrice },
-      propertyType,
     };
 
-    // Adding filters for amenities, bookingOptions, and hostLanguages if they exist
+    // Add category filter if provided
+    if (category) {
+      filter.category = category;
+    }
+
+    // Add amenities filter if provided
     if (amenities && amenities.length > 0) {
       filter.amenities = { $all: amenities };
     }
+
+    // Add booking options filter if provided
     if (bookingOptions && bookingOptions.length > 0) {
       filter.bookingOptions = { $all: bookingOptions };
     }
+
+    // Add host languages filter if provided
     if (hostLanguages && hostLanguages.length > 0) {
       filter.hostLanguages = { $all: hostLanguages };
     }
 
+    // Fetch filtered properties from the database
     const properties = await propertiesCollection.find(filter).toArray();
 
+    // Return the filtered properties
     res.send(properties);
   } catch (error) {
+    console.error("Error filtering properties:", error);
     res
       .status(500)
       .send({ error: "An error occurred while filtering properties." });
